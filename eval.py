@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 # Load the prediction and ground truth data
-predictions = np.load('demo/output/s11/s11past/predictions_3d.npz', allow_pickle=True)['predictions']  # shape: (N_frames * 17, 3)
+predictions = np.load('../outputs/cam2_S1_Directions/predictions_3d.npz', allow_pickle=True)['predictions']  # shape: (N_frames * 17, 3)
 # Load the ground truth data (adjust path if needed)
 data = np.load("data/data_3d_h36m.npz", allow_pickle=True)
 positions_3d = data["positions_3d"].item()
 
 # Extract GT data for subject "S1" and activity "Directions"
-subject = positions_3d["S11"]
-activity = subject["Greeting"]
+subject = positions_3d["S1"]
+activity = subject["Directions"]  # shape: (N_frames, 32, 3)
 seq = activity  # Selecting the first activity sequence (adjust if needed)
 gt_poses_selected = seq  # shape: (N_frames, 32, 3)
 
@@ -81,7 +81,7 @@ mpjpe_all_frames = np.mean(mpjpe_list) * 1000  # Convert to mm
 print(f"Mean Per Joint Position Error (MPJPE) across all frames: {mpjpe_all_frames:.2f}")
 
 # Choose a frame to visualize (e.g., the first frame)
-frame_idx = 1000
+frame_idx = 100
 
 # Extract the 3D positions for the selected frame (first frame)
 pred_frame = predictions[frame_idx] * 1000  # shape: (17, 3)
