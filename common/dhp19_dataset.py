@@ -9,9 +9,9 @@ class Dhp19Dataset:
 
         # Only used for left/right indices + some viz.
         self._skeleton = Skeleton(
-            parents=[-1]*13,  # not critical for training
+            parents=[-1] * 13,                 # parents not used for training here
             joints_left=[3, 5, 8, 10, 12],
-            joints_right=[2, 4, 6, 7, 9, 11],
+            joints_right=[2, 4, 7, 9, 11],
         )
 
     def subjects(self): return list(self._pos.keys())
