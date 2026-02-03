@@ -21,6 +21,7 @@ import logging
 
 from einops import rearrange, repeat
 from copy import deepcopy
+from tqdm import tqdm
 
 from common.camera import *
 import collections
@@ -281,7 +282,7 @@ if not args.evaluate:
         N_semi = 0
         model_pos_train.train()
 
-        for _, batch_3d, batch_2d in train_generator.next_epoch():
+        for _, batch_3d, batch_2d in tqdm(train_generator.next_epoch(), desc=f'Epoch {epoch + 1}/{args.epochs}', ncols=100, leave=False):
             inputs_3d = torch.from_numpy(batch_3d.astype('float32')) # [512, 1, 17, 3]
             inputs_2d = torch.from_numpy(batch_2d.astype('float32')) # [512, 3, 17, 2]
 
@@ -320,7 +321,7 @@ if not args.evaluate:
             N = 0
             if not args.no_eval:
                 # Evaluate on test set
-                for _, batch, batch_2d in test_generator.next_epoch():
+                for _, batch, batch_2d in tqdm(test_generator.next_epoch(), desc=f'Evaluating Epoch {epoch + 1}/{args.epochs}', ncols=100, leave=False):
                     inputs_3d = torch.from_numpy(batch.astype('float32')) # [1, 2356, 17, 3]
                     inputs_2d = torch.from_numpy(batch_2d.astype('float32')) # [1, 2358, 17, 2]
 
