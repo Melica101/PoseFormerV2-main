@@ -89,6 +89,16 @@ keypoints = keypoints['positions_2d'].item()
 for subject in dataset.subjects():
     assert subject in keypoints, 'Subject {} is missing from the 2D detections dataset'.format(subject)
     for action in dataset[subject].keys():
+        assert len(dataset[subject][action]["positions_2d"]) == 4  # 4 cameras
+        assert len(dataset[subject][action]["positions_3d"]) == 4  # 4 cameras
+        assert len(dataset[subject][action]["cameras"]) == 4  # 4 cameras
+        poses_2d = keypoints[subject][action]
+        cameras = dataset.cameras()[subject]
+        
+        print(f"{subject} - {action}")
+        print(f"Number of cameras: {len(cameras)}")
+        print(f"Number of 2D poses: {len(poses_2d)}")
+        print(f"Shape of 2D poses for camera 0: {poses_2d[0].shape}")
         assert action in keypoints[subject], 'Action {} of subject {} is missing from the 2D detections dataset'.format(action, subject)
         if 'positions_3d' not in dataset[subject][action]:
             continue
