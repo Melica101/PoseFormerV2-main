@@ -281,10 +281,13 @@ if not args.evaluate:
         N = 0
         N_semi = 0
         model_pos_train.train()
-
+        
+        print(f"Starting Epoch {epoch + 1}/{args.epochs}")  # Check which epoch is running
         for _, batch_3d, batch_2d in tqdm(train_generator.next_epoch(), desc=f'Epoch {epoch + 1}/{args.epochs}', ncols=100, leave=False):
+            print(f"Processing batch {_} of epoch {epoch + 1}")  # Debugging line to check the batch loop
             inputs_3d = torch.from_numpy(batch_3d.astype('float32')) # [512, 1, 17, 3]
             inputs_2d = torch.from_numpy(batch_2d.astype('float32')) # [512, 3, 17, 2]
+            print(f"inputs_3d shape: {inputs_3d.shape}, inputs_2d shape: {inputs_2d.shape}")  # Debugging line to check input shapes
 
             if torch.cuda.is_available():
                 inputs_3d = inputs_3d.cuda()
