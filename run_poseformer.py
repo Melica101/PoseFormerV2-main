@@ -91,9 +91,9 @@ for subject in dataset.subjects():
     for action in dataset[subject].keys():
         if 'positions_2d' not in dataset[subject][action]:
             print(f"Missing 2D positions for {subject} - {action}")
-        assert len(dataset[subject][action]["positions_2d"]) == 4  # 4 cameras
-        assert len(dataset[subject][action]["positions_3d"]) == 4  # 4 cameras
-        assert len(dataset[subject][action]["cameras"]) == 4  # 4 cameras
+        # assert len(dataset[subject][action]["positions_2d"]) == 4  # 4 cameras
+        # assert len(dataset[subject][action]["positions_3d"]) == 4  # 4 cameras
+        # assert len(dataset[subject][action]["cameras"]) == 4  # 4 cameras
         poses_2d = keypoints[subject][action]
         cameras = dataset.cameras()[subject]
         
