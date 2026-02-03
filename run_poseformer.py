@@ -89,6 +89,8 @@ keypoints = keypoints['positions_2d'].item()
 for subject in dataset.subjects():
     assert subject in keypoints, 'Subject {} is missing from the 2D detections dataset'.format(subject)
     for action in dataset[subject].keys():
+        if 'positions_2d' not in dataset[subject][action]:
+            print(f"Missing 2D positions for {subject} - {action}")
         assert len(dataset[subject][action]["positions_2d"]) == 4  # 4 cameras
         assert len(dataset[subject][action]["positions_3d"]) == 4  # 4 cameras
         assert len(dataset[subject][action]["cameras"]) == 4  # 4 cameras
