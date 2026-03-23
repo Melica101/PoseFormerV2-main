@@ -130,14 +130,15 @@ class MixedBlock(nn.Module):
 
 
 class PoseTransformerV2(nn.Module):
-    def __init__(self, num_frame=9, num_joints=17, in_chans=2,
+    def __init__(self, num_frame=9, num_joints=17, in_chans=2, embed_dim=None, joint_mapping=None,
                  num_heads=8, mlp_ratio=2., qkv_bias=True, qk_scale=None,
-                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0.2,  norm_layer=None, args=None):
+                 drop_rate=0., attn_drop_rate=0., drop_path_rate=0.2,  norm_layer=None, args=None, num_joints_out=None):
         """    ##########hybrid_backbone=None, representation_size=None,
         Args:
             num_frame (int, tuple): input frame number
             num_joints (int, tuple): joints number
             in_chans (int): number of input channels, 2D joints have 2 channels: (x,y)
+            embed_dim (int): embedding dimension, if None default to embed_dim_ratio * num_joints
             embed_dim_ratio (int): embedding dimension ratio
             depth (int): depth of transformer
             num_heads (int): number of attention heads
@@ -154,8 +155,12 @@ class PoseTransformerV2(nn.Module):
         norm_layer = norm_layer or partial(nn.LayerNorm, eps=1e-6)
         embed_dim_ratio = args.embed_dim_ratio
         depth = args.depth
-        embed_dim = embed_dim_ratio * num_joints   #### temporal embed_dim is num_joints * spatial embedding dim ratio
-        out_dim = num_joints * 3    #### output dimension is num_joints * 3
+        self.embed_dim = embed_dim or (embed_dim_ratio * num_joints)   #### temporal embed_dim is num_joints * spatial embedding dim ratio
+        embed_dim = self.embed_dim
+        self.num_joints = num_joints
+        self.joint_mapping = joint_mapping
+        self.num_joints_out = num_joints_out or num_joints
+        out_dim = self.num_joints_out * 3    #### output dimension is num_joints * 3
         self.num_frame_kept = args.number_of_kept_frames
         self.num_coeff_kept = args.number_of_kept_coeffs if args.number_of_kept_coeffs else self.num_frame_kept
 
@@ -231,12 +236,23 @@ class PoseTransformerV2(nn.Module):
 
     def forward(self, x):
         b, f, p, _ = x.shape
+        if self.joint_mapping is not None:
+            # Semantic mapping of joints
+            new_x = torch.zeros(b, f, self.num_joints, x.shape[-1], device=x.device, dtype=x.dtype)
+            for i, target_idx in enumerate(self.joint_mapping):
+                new_x[:, :, target_idx] = x[:, :, i]
+            x = new_x
+        elif p < self.num_joints:
+            # Fallback to simple padding if no mapping provided
+            x = F.pad(x, (0, 0, 0, self.num_joints - p))
+            
+        b, f, p, _ = x.shape # updated p
         x_ = x.clone()
 
         Spatial_feature = self.Spatial_forward_features(x)
         x = self.forward_features(x_, Spatial_feature)
         x = torch.cat((self.weighted_mean(x[:, :self.num_coeff_kept]), self.weighted_mean_(x[:, self.num_coeff_kept:])), dim=-1)
 
-        x = self.head(x).view(b, 1, p, -1)
+        x = self.head(x).view(b, 1, self.num_joints_out, -1)
         return x
 

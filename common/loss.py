@@ -55,7 +55,18 @@ def p_mpjpe(predicted, target):
     Y0 /= normY
 
     H = np.matmul(X0.transpose(0, 2, 1), Y0)
-    U, s, Vt = np.linalg.svd(H)
+    
+    # Check for NaNs/Infs in H which cause SVD to fail
+    if not np.all(np.isfinite(H)):
+        # print("WARNING: NaNs or Infs in covariance matrix H. Returning unaligned MPJPE.")
+        return np.mean(np.linalg.norm(predicted - target, axis=len(target.shape)-1))
+
+    try:
+        U, s, Vt = np.linalg.svd(H)
+    except np.linalg.LinAlgError:
+        # print("WARNING: SVD did not converge in p_mpjpe. Returning unaligned MPJPE.")
+        return np.mean(np.linalg.norm(predicted - target, axis=len(target.shape)-1))
+
     V = Vt.transpose(0, 2, 1)
     R = np.matmul(V, U.transpose(0, 2, 1))
 
